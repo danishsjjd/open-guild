@@ -3,7 +3,9 @@ on: push
 env:
   AWS_REGION: ap-south-1
   ECR_REPOSITORY: devops
-
+permissions:
+  contents: read
+  id-token: write
 jobs:
   publish:
     runs-on: ubuntu-latest
