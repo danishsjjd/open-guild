@@ -116,7 +116,7 @@ export default function Home() {
         <header className="flex flex-col gap-5 border-b border-[#dfe3e8] pb-6 sm:flex-row sm:items-end sm:justify-between">
           <div className="space-y-2">
             <p className="text-sm font-semibold uppercase tracking-[0.16em] text-[#396a54]">
-              Local workspace
+              Local workspace!
             </p>
             <h1 className="text-4xl font-semibold tracking-normal text-[#111418] sm:text-5xl">
               Todo App
@@ -288,12 +288,7 @@ function Stat({ label, value }: { label: string; value: number }) {
 
 function CheckIcon() {
   return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 20 20"
-      className="size-4"
-      fill="none"
-    >
+    <svg aria-hidden="true" viewBox="0 0 20 20" className="size-4" fill="none">
       <path
         d="m5 10 3 3 7-7"
         stroke="currentColor"
@@ -307,12 +302,7 @@ function CheckIcon() {
 
 function TrashIcon() {
   return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 20 20"
-      className="size-4"
-      fill="none"
-    >
+    <svg aria-hidden="true" viewBox="0 0 20 20" className="size-4" fill="none">
       <path
         d="M4 6h12M8 6V4h4v2m-6 0 1 10h6l1-10"
         stroke="currentColor"
