@@ -1,8 +1,11 @@
-on: push
+on:
+  push:
+    branches:
+      - main
 
 env:
-  AWS_REGION: ap-south-1
-  ECR_REPOSITORY: devops
+  AWS_REGION: ${{ vars.AWS_REGION }}
+  ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}
 permissions:
   contents: read
   id-token: write
@@ -31,8 +34,44 @@ jobs:
         with:
           context: .
           push: true
-          tags: |
-            ${{ steps.ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
-            ${{ steps.ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest
+          tags: ${{ steps.ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+      - name: Deploy on EC2
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USER: ${{ secrets.EC2_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+          IMAGE_URI: ${{ steps.ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/ec2_key
+          chmod 600 ~/.ssh/ec2_key
+
+          ssh-keyscan -H "$EC2_HOST" >> ~/.ssh/known_hosts
+
+          ssh -i ~/.ssh/ec2_key "$EC2_USER@$EC2_HOST" \
+            "AWS_REGION='$AWS_REGION' IMAGE_URI='$IMAGE_URI' APP_NAME='$ECR_REPOSITORY' bash -s" << 'EOF'
+              set -euo pipefail
+
+              REGISTRY="${IMAGE_URI%%/*}"
+
+              aws ecr get-login-password --region "$AWS_REGION" |
+                docker login \
+                  --username AWS \
+                  --password-stdin "$REGISTRY"
+
+              docker pull "$IMAGE_URI"
+
+              docker rm -f "$APP_NAME" 2>/dev/null || true
+
+              docker run -d \
+                --name "$APP_NAME" \
+                --restart unless-stopped \
+                -p 8080:8080 \
+                "$IMAGE_URI"
+          EOF
+
+      - name: Remove SSH key
+        if: always()
+        run: rm -f ~/.ssh/ec2_key
