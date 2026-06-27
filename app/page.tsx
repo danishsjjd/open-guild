@@ -1,315 +1,211 @@
-"use client";
+import Image from "next/image"
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+const featureCards = [
+  {
+    title: "Guild-first workspaces",
+    body: "Create focused homes for teams, communities, launches, and long-running projects without losing the shared context.",
+  },
+  {
+    title: "Fast channels",
+    body: "Move from announcements to deep work with clean channel lists, persistent threads, and low-friction search.",
+  },
+  {
+    title: "Voice when it matters",
+    body: "Spin up huddles, live rooms, and drop-in calls directly from the conversation that started them.",
+  },
+  {
+    title: "Controls for scale",
+    body: "Role-based access, moderation queues, audit history, and member states are designed in from the start.",
+  },
+]
 
-type Filter = "all" | "active" | "completed";
-
-type Todo = {
-  id: string;
-  title: string;
-  completed: boolean;
-  createdAt: number;
-};
-
-const STORAGE_KEY = "devops.todos.v1";
+const workflowItems = [
+  "Invite a guild",
+  "Open dedicated channels",
+  "Chat, huddle, and ship",
+]
 
 export default function Home() {
-  const [todos, setTodos] = useState<Todo[]>([]);
-  const [draft, setDraft] = useState("");
-  const [filter, setFilter] = useState<Filter>("all");
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editingTitle, setEditingTitle] = useState("");
-  const [hasLoaded, setHasLoaded] = useState(false);
-
-  useEffect(() => {
-    try {
-      const stored = window.localStorage.getItem(STORAGE_KEY);
-
-      if (stored) {
-        const parsed = JSON.parse(stored) as Todo[];
-        setTodos(Array.isArray(parsed) ? parsed : []);
-      }
-    } finally {
-      setHasLoaded(true);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!hasLoaded) {
-      return;
-    }
-
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(todos));
-  }, [hasLoaded, todos]);
-
-  const activeCount = todos.filter((todo) => !todo.completed).length;
-  const completedCount = todos.length - activeCount;
-
-  const filteredTodos = useMemo(() => {
-    if (filter === "active") {
-      return todos.filter((todo) => !todo.completed);
-    }
-
-    if (filter === "completed") {
-      return todos.filter((todo) => todo.completed);
-    }
-
-    return todos;
-  }, [filter, todos]);
-
-  function addTodo(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
-    const title = draft.trim();
-    if (!title) {
-      return;
-    }
-
-    setTodos((current) => [
-      {
-        id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
-        title,
-        completed: false,
-        createdAt: Date.now(),
-      },
-      ...current,
-    ]);
-    setDraft("");
-    setFilter("all");
-  }
-
-  function toggleTodo(id: string) {
-    setTodos((current) =>
-      current.map((todo) =>
-        todo.id === id ? { ...todo, completed: !todo.completed } : todo,
-      ),
-    );
-  }
-
-  function removeTodo(id: string) {
-    setTodos((current) => current.filter((todo) => todo.id !== id));
-  }
-
-  function beginEdit(todo: Todo) {
-    setEditingId(todo.id);
-    setEditingTitle(todo.title);
-  }
-
-  function saveEdit(id: string) {
-    const title = editingTitle.trim();
-
-    if (!title) {
-      removeTodo(id);
-      setEditingId(null);
-      return;
-    }
-
-    setTodos((current) =>
-      current.map((todo) => (todo.id === id ? { ...todo, title } : todo)),
-    );
-    setEditingId(null);
-  }
-
   return (
-    <main className="min-h-screen bg-[#f6f7f9] text-[#1b1f24]">
-      <section className="mx-auto flex min-h-screen w-full max-w-5xl flex-col gap-8 px-4 py-6 sm:px-6 lg:px-8">
-        <header className="flex flex-col gap-5 border-b border-[#dfe3e8] pb-6 sm:flex-row sm:items-end sm:justify-between">
-          <div className="space-y-2">
-            <p className="text-sm font-semibold uppercase tracking-[0.16em] text-[#396a54]">
-              Local workspace!
-            </p>
-            <h1 className="text-4xl font-semibold tracking-normal text-[#111418] sm:text-5xl">
-              Todo App
-            </h1>
-            <p className="max-w-2xl text-base leading-7 text-[#5a6470]">
-              Tasks are saved in this browser with localStorage and survive
-              refreshes.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-3 gap-2 rounded-lg border border-[#dfe3e8] bg-white p-2 shadow-sm">
-            <Stat label="Total" value={todos.length} />
-            <Stat label="Active" value={activeCount} />
-            <Stat label="Done" value={completedCount} />
-          </div>
-        </header>
-
-        <form
-          onSubmit={addTodo}
-          className="grid gap-3 rounded-lg border border-[#dfe3e8] bg-white p-3 shadow-sm sm:grid-cols-[1fr_auto]"
-        >
-          <label className="sr-only" htmlFor="new-task">
-            New task
-          </label>
-          <input
-            id="new-task"
-            value={draft}
-            onChange={(event) => setDraft(event.target.value)}
-            placeholder="Add a task"
-            className="h-12 min-w-0 rounded-md border border-[#ccd3da] bg-white px-4 text-base outline-none transition focus:border-[#2f6f56] focus:ring-4 focus:ring-[#2f6f56]/15"
-          />
-          <button
-            type="submit"
-            className="h-12 rounded-md bg-[#1e6048] px-5 text-sm font-semibold text-white transition hover:bg-[#174c3a] focus:outline-none focus:ring-4 focus:ring-[#1e6048]/20"
+    <main className="min-h-screen bg-[#f7f8f5] text-[#171a1f]">
+      <header className="sticky top-0 z-30 border-b border-[#dfe3dc] bg-[#f7f8f5]/90 backdrop-blur">
+        <nav className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+          <a
+            href="#"
+            className="flex items-center gap-3"
+            aria-label="OpenGuild home"
           >
-            Add task
-          </button>
-        </form>
+            <span className="grid size-9 place-items-center rounded-md bg-[#173b35] text-sm font-bold text-white">
+              OG
+            </span>
+            <span className="text-lg font-semibold tracking-normal">
+              OpenGuild
+            </span>
+          </a>
 
-        <section className="flex flex-1 flex-col overflow-hidden rounded-lg border border-[#dfe3e8] bg-white shadow-sm">
-          <div className="flex flex-col gap-3 border-b border-[#e4e7eb] p-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex rounded-md border border-[#d8dee4] bg-[#f8fafb] p-1">
-              {(["all", "active", "completed"] as const).map((item) => (
-                <button
-                  key={item}
-                  type="button"
-                  onClick={() => setFilter(item)}
-                  className={`h-9 rounded px-3 text-sm font-medium capitalize transition ${
-                    filter === item
-                      ? "bg-white text-[#111418] shadow-sm"
-                      : "text-[#67727e] hover:text-[#1b1f24]"
-                  }`}
-                >
-                  {item}
-                </button>
-              ))}
-            </div>
-
-            <button
-              type="button"
-              onClick={() =>
-                setTodos((current) => current.filter((todo) => !todo.completed))
-              }
-              disabled={completedCount === 0}
-              className="h-9 rounded-md border border-[#d8dee4] px-3 text-sm font-medium text-[#5a6470] transition hover:border-[#b6c0ca] hover:text-[#1b1f24] disabled:cursor-not-allowed disabled:opacity-45"
-            >
-              Clear completed
-            </button>
+          <div className="hidden items-center gap-7 text-sm font-medium text-[#5d665f] md:flex">
+            <a className="transition hover:text-[#171a1f]" href="#product">
+              Product
+            </a>
+            <a className="transition hover:text-[#171a1f]" href="#features">
+              Features
+            </a>
+            <a className="transition hover:text-[#171a1f]" href="#workflow">
+              Workflow
+            </a>
           </div>
 
-          {filteredTodos.length > 0 ? (
-            <ul className="divide-y divide-[#edf0f2]">
-              {filteredTodos.map((todo) => (
-                <li
-                  key={todo.id}
-                  className="grid min-h-16 grid-cols-[auto_1fr_auto] items-center gap-3 px-3 py-3 sm:px-4"
-                >
-                  <button
-                    type="button"
-                    onClick={() => toggleTodo(todo.id)}
-                    aria-label={
-                      todo.completed ? "Mark task active" : "Mark task done"
-                    }
-                    className={`flex size-6 items-center justify-center rounded border transition ${
-                      todo.completed
-                        ? "border-[#1e6048] bg-[#1e6048] text-white"
-                        : "border-[#aeb8c2] text-transparent hover:border-[#1e6048]"
-                    }`}
-                  >
-                    <CheckIcon />
-                  </button>
+          <a
+            href="#waitlist"
+            className="rounded-md bg-[#173b35] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#0f2b27] focus:ring-4 focus:ring-[#173b35]/20 focus:outline-none"
+          >
+            Join waitlist
+          </a>
+        </nav>
+      </header>
 
-                  {editingId === todo.id ? (
-                    <form
-                      onSubmit={(event) => {
-                        event.preventDefault();
-                        saveEdit(todo.id);
-                      }}
-                      className="min-w-0"
-                    >
-                      <input
-                        value={editingTitle}
-                        onChange={(event) =>
-                          setEditingTitle(event.target.value)
-                        }
-                        onBlur={() => saveEdit(todo.id)}
-                        onKeyDown={(event) => {
-                          if (event.key === "Escape") {
-                            setEditingId(null);
-                          }
-                        }}
-                        autoFocus
-                        className="h-10 w-full min-w-0 rounded-md border border-[#ccd3da] px-3 outline-none focus:border-[#2f6f56] focus:ring-4 focus:ring-[#2f6f56]/15"
-                      />
-                    </form>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => beginEdit(todo)}
-                      className={`min-w-0 text-left text-base leading-6 ${
-                        todo.completed
-                          ? "text-[#8a949e] line-through"
-                          : "text-[#1b1f24]"
-                      }`}
-                    >
-                      {todo.title}
-                    </button>
-                  )}
+      <section
+        id="product"
+        className="relative isolate flex min-h-[78svh] items-center overflow-hidden"
+      >
+        <Image
+          src="/openguild-hero.png"
+          alt="OpenGuild team chat product preview"
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover object-center"
+        />
+        <div className="absolute inset-0 bg-[#111816]/70" />
+        <div className="absolute inset-y-0 left-0 w-full bg-[linear-gradient(90deg,#111816_0%,rgba(17,24,22,0.88)_34%,rgba(17,24,22,0.3)_70%,rgba(17,24,22,0.05)_100%)]" />
 
-                  <button
-                    type="button"
-                    onClick={() => removeTodo(todo.id)}
-                    aria-label={`Delete ${todo.title}`}
-                    className="flex size-9 items-center justify-center rounded-md border border-transparent text-[#7c8792] transition hover:border-[#f0c4bd] hover:bg-[#fff4f1] hover:text-[#a73424]"
-                  >
-                    <TrashIcon />
-                  </button>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <div className="flex flex-1 flex-col items-center justify-center gap-2 px-6 py-20 text-center">
-              <h2 className="text-xl font-semibold text-[#1b1f24]">
-                {todos.length === 0 ? "No tasks yet" : "Nothing matches"}
-              </h2>
-              <p className="max-w-sm text-sm leading-6 text-[#68737f]">
-                {todos.length === 0
-                  ? "Add your first task above to start tracking work in this browser."
-                  : "Switch filters to see the rest of your tasks."}
-              </p>
+        <div className="relative mx-auto w-full max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
+          <div className="max-w-2xl">
+            <p className="mb-4 text-sm font-semibold tracking-[0.16em] text-[#f0b35a] uppercase">
+              Open-source guild communication
+            </p>
+            <h1 className="text-5xl leading-[1.02] font-semibold tracking-normal text-white sm:text-6xl lg:text-7xl">
+              OpenGuild
+            </h1>
+            <p className="mt-6 max-w-xl text-lg leading-8 text-[#d7ddd8]">
+              A community and team chat platform for organized channels, live
+              voice rooms, threaded decisions, and member controls that feel
+              built for serious collaboration.
+            </p>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <a
+                href="#waitlist"
+                className="rounded-md bg-[#e9774f] px-5 py-3 text-center text-sm font-semibold text-white transition hover:bg-[#d85f3a] focus:ring-4 focus:ring-[#e9774f]/25 focus:outline-none"
+              >
+                Start a guild
+              </a>
+              <a
+                href="#features"
+                className="rounded-md border border-white/30 bg-white/10 px-5 py-3 text-center text-sm font-semibold text-white transition hover:bg-white/15 focus:ring-4 focus:ring-white/20 focus:outline-none"
+              >
+                Explore features
+              </a>
             </div>
-          )}
-        </section>
+          </div>
+        </div>
+      </section>
+
+      <section className="border-y border-[#dfe3dc] bg-white">
+        <div className="mx-auto grid max-w-7xl gap-6 px-4 py-8 sm:grid-cols-3 sm:px-6 lg:px-8">
+          {[
+            ["Channels", "Topic spaces that stay readable"],
+            ["Threads", "Decisions separated from noise"],
+            ["Voice", "Live rooms attached to context"],
+          ].map(([label, text]) => (
+            <div key={label} className="flex items-center gap-4">
+              <div className="h-12 w-1 rounded-full bg-[#2f7d71]" />
+              <div>
+                <p className="text-sm font-semibold tracking-[0.12em] text-[#687169] uppercase">
+                  {label}
+                </p>
+                <p className="mt-1 text-base font-medium text-[#171a1f]">
+                  {text}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section id="features" className="bg-[#f7f8f5] py-20">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="max-w-3xl">
+            <p className="text-sm font-semibold tracking-[0.16em] text-[#2f7d71] uppercase">
+              Built for the next guild
+            </p>
+            <h2 className="mt-3 text-3xl font-semibold tracking-normal text-[#171a1f] sm:text-4xl">
+              The familiar speed of chat with stronger structure underneath.
+            </h2>
+          </div>
+
+          <div className="mt-10 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            {featureCards.map((feature) => (
+              <article
+                key={feature.title}
+                className="rounded-lg border border-[#dfe3dc] bg-white p-6 shadow-sm"
+              >
+                <h3 className="text-lg font-semibold text-[#171a1f]">
+                  {feature.title}
+                </h3>
+                <p className="mt-4 text-sm leading-6 text-[#626b64]">
+                  {feature.body}
+                </p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section id="workflow" className="bg-[#17201d] py-20 text-white">
+        <div className="mx-auto grid max-w-7xl gap-10 px-4 sm:px-6 lg:grid-cols-[0.85fr_1.15fr] lg:px-8">
+          <div>
+            <p className="text-sm font-semibold tracking-[0.16em] text-[#f0b35a] uppercase">
+              How it works
+            </p>
+            <h2 className="mt-3 text-3xl font-semibold tracking-normal sm:text-4xl">
+              Bring the right people into the right room.
+            </h2>
+            <p className="mt-5 max-w-xl text-base leading-7 text-[#c7d0ca]">
+              OpenGuild keeps project context, member presence, and live
+              discussion in one place so communities can move from idea to
+              execution without scattering across tools.
+            </p>
+          </div>
+
+          <ol className="grid gap-4 sm:grid-cols-3">
+            {workflowItems.map((item, index) => (
+              <li
+                key={item}
+                className="rounded-lg border border-white/12 bg-white/[0.06] p-5"
+              >
+                <span className="grid size-10 place-items-center rounded-md bg-[#e9774f] text-sm font-bold">
+                  {index + 1}
+                </span>
+                <p className="mt-5 text-lg font-semibold">{item}</p>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
+      <section id="waitlist" className="bg-white py-16">
+        <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
+          <div>
+            <h2 className="text-3xl font-semibold tracking-normal text-[#171a1f]">
+              Build the guild chat stack in the open.
+            </h2>
+            <p className="mt-3 max-w-2xl text-base leading-7 text-[#626b64]">
+              OpenGuild is the new project identity for the app. The next step
+              is turning this landing page into the real chat experience.
+            </p>
+          </div>
+        </div>
       </section>
     </main>
-  );
-}
-
-function Stat({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="min-w-16 rounded-md bg-[#f8fafb] px-3 py-2 text-center">
-      <div className="text-xl font-semibold text-[#111418]">{value}</div>
-      <div className="text-xs font-medium uppercase tracking-[0.12em] text-[#68737f]">
-        {label}
-      </div>
-    </div>
-  );
-}
-
-function CheckIcon() {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 20 20" className="size-4" fill="none">
-      <path
-        d="m5 10 3 3 7-7"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="2"
-      />
-    </svg>
-  );
-}
-
-function TrashIcon() {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 20 20" className="size-4" fill="none">
-      <path
-        d="M4 6h12M8 6V4h4v2m-6 0 1 10h6l1-10"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="1.8"
-      />
-    </svg>
-  );
+  )
 }

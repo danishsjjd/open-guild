@@ -1,19 +1,21 @@
-import type { Metadata } from "next";
-import "./globals.css";
+import type { Metadata } from "next"
+
+import "./globals.css"
 
 export const metadata: Metadata = {
-  title: "Todo App",
-  description: "A browser-local todo app built with Next.js.",
-};
+  title: "OpenGuild",
+  description:
+    "OpenGuild is an open-source team and community chat platform for channels, threads, and live rooms.",
+}
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: React.ReactNode
 }>) {
   return (
     <html lang="en" className="h-full antialiased">
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="flex min-h-full flex-col">{children}</body>
     </html>
-  );
+  )
 }
